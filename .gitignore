@@ -6,9 +6,18 @@ app/build/
 .externalNativeBuild/
 local.properties
 
+# Termux 本机构建产物 (tools/build_native_arm64.sh 输出)
+app/src/main/cpp/*.so
+tools/test_wasm_native
+.ndk-headers/
+
 # IDE
 .idea/
 *.iml
+
+# Python
+__pycache__/
+*.pyc
 
 # 系统
 .DS_Store

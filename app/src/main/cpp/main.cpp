@@ -36,8 +36,7 @@ static bool loadAssetWasm(struct android_app* app, std::vector<uint8_t>* out)
 // NativeActivity 入口 (由 android_native_app_glue 调用)
 void android_main(struct android_app* app)
 {
-    Engine engine;
-    memset(&engine, 0, sizeof(engine));
+    Engine engine{};  // 默认成员初始化, 无需 memset
     app->userData = &engine;
     app->onAppCmd = engineHandleCmd;
     engine.app = app;
@@ -55,15 +54,19 @@ void android_main(struct android_app* app)
     }
 
     // 主循环: 有窗口就渲染一帧
+    // (ALooper_pollAll 在新版 NDK 中已被标记不可用, 改用 ALooper_pollOnce)
     while (true) {
         int events;
         struct android_poll_source* source;
-        const int ident = ALooper_pollAll(engine.window != nullptr ? 0 : -1,
-                                          nullptr, &events,
-                                          reinterpret_cast<void**>(&source));
-        (void)ident;
-        if (source != nullptr) {
-            source->process(app, source);
+        while (ALooper_pollOnce(engine.window != nullptr ? 0 : -1, nullptr,
+                                &events,
+                                reinterpret_cast<void**>(&source)) >= 0) {
+            if (source != nullptr) {
+                source->process(app, source);
+            }
+            if (app->destroyRequested != 0) {
+                goto done;
+            }
         }
         if (app->destroyRequested != 0) {
             break;
@@ -73,6 +76,7 @@ void android_main(struct android_app* app)
         }
     }
 
+done:
     engineTerm(&engine);
     LOGI("exit");
 }

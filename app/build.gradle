@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.mos.wasmndk'
+    namespace 'org.wurong.mos'
     compileSdk 35
 
     defaultConfig {
-        applicationId 'com.mos.wasmndk'
+        applicationId 'org.wurong.mos'
         minSdk 24
         targetSdk 35
         versionCode 1
