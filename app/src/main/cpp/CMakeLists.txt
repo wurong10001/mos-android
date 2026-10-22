@@ -37,7 +37,14 @@ target_include_directories(native_app_glue PUBLIC
 add_library(mosandroid SHARED
     main.cpp
     engine.cpp
+    error_page.cpp
+    crash_handler.cpp
+    log.cpp
+    strings.cpp
     wasm_runner.cpp)
+
+# 静态链接 libc++, 避免运行时依赖 libc++_shared.so (应用库路径里没有它)
+target_link_options(mosandroid PRIVATE -static-libstdc++)
 
 target_link_libraries(mosandroid
     wasm3

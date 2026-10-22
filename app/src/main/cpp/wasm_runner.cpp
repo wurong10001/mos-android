@@ -2,14 +2,11 @@
 
 #include "wasm3.h"
 
-#include <android/log.h>
+#include "log.h"
+
 #include <new>
 #include <cstdio>
 #include <cstring>
-
-#define LOG_TAG "WasmRunner"
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 namespace {
 
@@ -51,6 +48,11 @@ m3ApiRawFunction(host_log)
 
 WasmRunner::~WasmRunner()
 {
+    destroy();
+}
+
+void WasmRunner::destroy()
+{
     if (runtime_) {
         m3_FreeRuntime(static_cast<IM3Runtime>(runtime_));  // 同时释放 module
         runtime_ = nullptr;
@@ -59,13 +61,22 @@ WasmRunner::~WasmRunner()
         m3_FreeEnvironment(static_cast<IM3Environment>(env_));
         env_ = nullptr;
     }
+    module_ = nullptr;
+    fnRender_ = nullptr;
     delete[] wasmBytes_;
     wasmBytes_ = nullptr;
+    wasmSize_ = 0;
+    memBase_ = nullptr;
+    memSize_ = 0;
+    fbOffset_ = 0;
+    fbWidth_ = 0;
+    fbHeight_ = 0;
 }
 
 bool WasmRunner::load(const uint8_t* data, size_t size)
 {
     lastError_[0] = '\0';
+    destroy();  // 允许重复加载 (错误页重试)
     if (data == nullptr || size == 0) {
         snprintf(lastError_, sizeof(lastError_), "empty wasm data");
         return false;

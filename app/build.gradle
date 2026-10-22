@@ -15,7 +15,8 @@ android {
 
         externalNativeBuild {
             cmake {
-                cppFlags '-std=c++17'
+                // 静态链接 libc++, 避免依赖 libc++_shared.so
+                cppFlags '-std=c++17 -static-libstdc++'
             }
         }
         ndk {

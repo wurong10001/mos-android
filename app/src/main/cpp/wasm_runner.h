@@ -40,6 +40,8 @@ public:
     const char* lastError() const { return lastError_; }
 
 private:
+    void destroy();  // 释放 wasm3 环境 (支持重复 load)
+
     uint8_t* wasmBytes_ = nullptr;  // 模块字节拷贝 (wasm3 要求生命周期内有效)
     size_t wasmSize_ = 0;
 

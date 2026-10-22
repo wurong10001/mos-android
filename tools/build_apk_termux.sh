@@ -31,10 +31,11 @@ mkdir -p "$STAGING"
 sed 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android">|<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="'"$PKG"'">|' \
     "$ROOT/app/src/main/AndroidManifest.xml" > "$STAGING/AndroidManifest.xml"
 
-# 2) aapt2 link: 编译清单 + 打包基础 APK
+# 2) aapt2 link: 编译清单 + 打包 assets + 生成基础 APK
 "$AAPT2" link -o "$UNSIGNED" \
     --manifest "$STAGING/AndroidManifest.xml" \
     -I "$ANDROID_JAR" \
+    -A "$ROOT/app/src/main/assets" \
     --min-sdk-version 24 \
     --target-sdk-version 35 \
     --version-code 1 \
