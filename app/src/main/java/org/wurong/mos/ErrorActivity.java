@@ -1,12 +1,16 @@
 package org.wurong.mos;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.graphics.Typeface;
 
 import java.io.File;
@@ -38,6 +42,9 @@ public class ErrorActivity extends Activity {
     // 换行常量 (避免源码里的转义序列)
     private static final String NL = String.valueOf((char) 10);
 
+    // 完整错误文本 (标题 + 正文), 供复制按钮使用
+    private String mFullText = "";
+
     // ---- 本地化 (与 strings.cpp 相同逻辑) ----
 
     private static boolean isChinese() {
@@ -68,8 +75,10 @@ public class ErrorActivity extends Activity {
                             + "Make sure the APK contains it, or regenerate:" + NL
                             + "  python3 tools/gen_sample_wasm.py";
                 case "hint_retry": return "Retry";
+                case "hint_copy": return "Copy error report";
                 case "hint_clear": return "Clear crash log and retry";
                 case "hint_full_log": return "Full log: ";
+                case "toast_copied": return "Error report copied to clipboard";
                 default: return key;
             }
         }
@@ -88,8 +97,10 @@ public class ErrorActivity extends Activity {
                             + "请确认 APK 内包含该文件, 或重新生成:" + NL
                             + "  python3 tools/gen_sample_wasm.py";
                 case "hint_retry": return "重试";
+                case "hint_copy": return "复制错误信息";
                 case "hint_clear": return "清除崩溃日志并重试";
                 case "hint_full_log": return "完整日志: ";
+                case "toast_copied": return "错误报告已复制到剪贴板";
                 default: return key;
             }
         }
@@ -107,8 +118,10 @@ public class ErrorActivity extends Activity {
                         + "請確認 APK 內包含該檔案, 或重新產生:" + NL
                         + "  python3 tools/gen_sample_wasm.py";
             case "hint_retry": return "重試";
+            case "hint_copy": return "複製錯誤資訊";
             case "hint_clear": return "清除日誌並重試";
             case "hint_full_log": return "完整日誌: ";
+            case "toast_copied": return "錯誤報告已複製到剪貼板";
             default: return key;
         }
     }
@@ -154,7 +167,24 @@ public class ErrorActivity extends Activity {
         ScrollView scroll = new ScrollView(this);
         scroll.addView(bodyView);
 
-        // 按钮: 重试 / 清除崩溃日志并重试
+        // 完整错误文本 (复制按钮用): 标题 + 正文
+        mFullText = titleView.getText() + NL + NL + buildBody(errorKey, details, logPath);
+
+        // 按钮: 复制错误信息 / 重试 / 清除崩溃日志并重试
+        Button copyBtn = new Button(this);
+        copyBtn.setText(t("hint_copy"));
+        copyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                if (cm != null) {
+                    cm.setPrimaryClip(ClipData.newPlainText("error report", mFullText));
+                    Toast.makeText(ErrorActivity.this, t("toast_copied"),
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         Button retryBtn = new Button(this);
         retryBtn.setText(t("hint_retry"));
         retryBtn.setOnClickListener(new View.OnClickListener() {
@@ -185,6 +215,7 @@ public class ErrorActivity extends Activity {
         LinearLayout.LayoutParams scrollLp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f);
         root.addView(scroll, scrollLp);
+        root.addView(copyBtn);
         root.addView(retryBtn);
         root.addView(clearBtn);
         setContentView(root);
