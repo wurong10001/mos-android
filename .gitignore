@@ -25,3 +25,6 @@ __pycache__/
 # 安装包 (如需要提交 apk 可去掉这行)
 *.apk
 *.aab
+
+# apksigner v4 签名副产品
+*.idsig
