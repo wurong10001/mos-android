@@ -3,7 +3,7 @@
 #
 # 工具链 (全部 arm64/bionic 兼容):
 #   aapt2       ~/rendiix/prebuilt-binary/arm64/aapt2   (rendiix/termux-aapt)
-#   android.jar ~/android-sdk/platforms/android-11/android.jar
+#   android.jar ~/android-sdk/platforms/android-30/android.jar
 #   apksigner   ~/apktools/lib/apksigner.jar            (纯 Java)
 #
 # 用法: bash tools/build_apk_termux.sh [libmosandroid.so路径]
@@ -14,7 +14,7 @@ SO="${1:-$ROOT/app/src/main/cpp/libmosandroid.so}"
 PKG="org.wurong.mos"
 
 AAPT2="${AAPT2:-$HOME/rendiix/prebuilt-binary/arm64/aapt2}"
-ANDROID_JAR="${ANDROID_JAR:-$HOME/android-sdk/platforms/android-11/android.jar}"
+ANDROID_JAR="${ANDROID_JAR:-$HOME/android-sdk/platforms/android-30/android.jar}"
 APKSIGNER="${APKSIGNER:-$HOME/apktools/lib/apksigner.jar}"
 KEYSTORE="${KEYSTORE:-$HOME/.android/debug.keystore}"
 

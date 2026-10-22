@@ -4,7 +4,9 @@ plugins {
 
 android {
     namespace 'org.wurong.mos'
-    compileSdk 35
+    // compileSdk 30: rendiix arm64 版 aapt2 (2.19) 读不了 API 35+ 的 android.jar
+    compileSdk 30
+    buildToolsVersion '36.0.0'
 
     defaultConfig {
         applicationId 'org.wurong.mos'
@@ -12,29 +14,18 @@ android {
         targetSdk 35
         versionCode 1
         versionName '1.0'
+    }
 
-        externalNativeBuild {
-            cmake {
-                // 静态链接 libc++, 避免依赖 libc++_shared.so
-                cppFlags '-std=c++17 -static-libstdc++'
-            }
-        }
-        ndk {
-            // 按需增减; 只保留一个 ABI 可显著加快构建
-            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+    // native 库预编译 (tools/build_native_arm64.sh) 后放入 jniLibs,
+    // 不走 externalNativeBuild (Termux 上没有 arm64 host 的 NDK 工具链)
+    sourceSets {
+        main {
+            jniLibs.srcDir 'src/main/jniLibs'
         }
     }
 
-    // NativeActivity 方案: 没有 Java/Kotlin 源码
     buildFeatures {
         buildConfig false
-    }
-
-    externalNativeBuild {
-        cmake {
-            path 'src/main/cpp/CMakeLists.txt'
-            version '3.22.1'
-        }
     }
 
     compileOptions {

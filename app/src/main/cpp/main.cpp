@@ -12,8 +12,8 @@
 
 #include "crash_handler.h"
 #include "engine.h"
+#include "java_ui.h"
 #include "log.h"
-#include "strings.h"
 
 // 从 assets 读取 wasm 模块
 static bool loadAssetWasm(struct android_app* app, std::vector<uint8_t>* out)
@@ -38,7 +38,7 @@ static bool loadAssetWasm(struct android_app* app, std::vector<uint8_t>* out)
     return ok;
 }
 
-// 测试用: 在应用 files 目录放一个名为 test_crash 的文件, 启动时会故意崩溃,
+// 测试用: 在日志目录放一个名为 test_crash 的文件, 启动时会故意崩溃,
 // 用于验证崩溃处理与错误页 (详见 README)
 static bool testCrashRequested(const char* dir)
 {
@@ -71,14 +71,14 @@ void android_main(struct android_app* app)
     }
     engine.filesDir = filesDir;
 
+    moslog::init(filesDir);
+    crash::install(filesDir);
+
     // 全屏: 隐藏状态栏 (可在任意线程调用)
     ANativeActivity_setWindowFlags(app->activity, AWINDOW_FLAG_FULLSCREEN, 0);
 
-    moslog::init(filesDir);
-    crash::install(filesDir);
-    strings::init(app->config);  // 按系统语言选择错误页文本
-    LOGI("app start (pid=%d, files=%s, log=%s, lang=%d)", getpid(), filesDir,
-         moslog::filePath(), static_cast<int>(strings::lang()));
+    LOGI("app start (pid=%d, files=%s, log=%s)", getpid(), filesDir,
+         moslog::filePath());
 
     if (testCrashRequested(filesDir)) {
         LOGW("test_crash detected, crashing on purpose");
@@ -86,30 +86,37 @@ void android_main(struct android_app* app)
         *p = 42;  // 故意段错误
     }
 
-    // 上次崩溃过? -> 先展示崩溃报告
+    char logPath[700];
+    char crashPath[700];
+    snprintf(logPath, sizeof(logPath), "%s/mos.log", filesDir);
+    snprintf(crashPath, sizeof(crashPath), "%s/crash.log", filesDir);
+
+    // 上次崩溃过? -> 拉起 Java 错误页展示崩溃报告
     if (crash::hasPendingReport(filesDir)) {
         const std::string report = crash::takeReport(filesDir);
-        engine.errorPage.open(strings::get().errCrashPrev.c_str(), report);
-        LOGI("previous crash report is shown");
+        if (!ui_show_error(app, "crash_prev", report.c_str(), logPath,
+                           crashPath)) {
+            LOGE("failed to show crash report page");
+        }
+        LOGI("previous crash report page shown");
     }
 
     // 读取 wasm 模块 (加载失败由 engineDrawFrame 里的重试逻辑处理)
     if (!loadAssetWasm(app, &engine.wasmBytes)) {
         LOGE("failed to load wasm module");
-        engine.errorPage.open(strings::get().errWasmLoad.c_str(),
-                              strings::get().bodyAssetMissing);
+        engineShowError(&engine, "asset_missing", nullptr);
     } else {
         LOGI("loaded sample.wasm: %zu bytes", engine.wasmBytes.size());
     }
 
-    // 主循环: 有窗口就渲染一帧
+    // 主循环: 有窗口且有焦点时渲染 (错误页盖住时暂停, 省电)
     // (ALooper_pollAll 在新版 NDK 中已被标记不可用, 改用 ALooper_pollOnce)
     while (true) {
         int events;
         struct android_poll_source* source;
-        while (ALooper_pollOnce(engine.window != nullptr ? 0 : -1, nullptr,
-                                &events,
-                                reinterpret_cast<void**>(&source)) >= 0) {
+        while (ALooper_pollOnce(
+                   engine.window != nullptr && engine.focused ? 0 : -1, nullptr,
+                   &events, reinterpret_cast<void**>(&source)) >= 0) {
             if (source != nullptr) {
                 source->process(app, source);
             }

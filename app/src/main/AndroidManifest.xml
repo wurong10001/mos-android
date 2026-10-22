@@ -2,12 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:label="MOS WASM"
-        android:hasCode="false">
+        android:label="MOS WASM">
         <!-- 纯 Native Activity: 入口是 cpp/main.cpp 的 android_main -->
+        <!-- NoTitleBar.Fullscreen 主题: 启动时即无标题栏/状态栏, 避免闪屏 -->
         <activity
             android:name="android.app.NativeActivity"
             android:label="MOS WASM"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="true">
             <!-- 指定要加载的 native 库名: libmosandroid.so -->
@@ -19,6 +20,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 错误页: 由 native 层通过 Intent 拉起 (java_ui.cpp) -->
+        <activity
+            android:name="org.wurong.mos.ErrorActivity"
+            android:label="MOS WASM"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:excludeFromRecents="true"
+            android:exported="false" />
     </application>
 
 </manifest>

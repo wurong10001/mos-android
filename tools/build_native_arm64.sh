@@ -49,9 +49,8 @@ $CC -std=gnu99 $COMMON -I"$GLUE" -c "$GLUE/android_native_app_glue.c" \
 # 3) C++ 源码 + 全部对象 -> libmosandroid.so
 $CXX -std=c++17 $COMMON -shared -static-libstdc++ \
     -I"$GLUE" -I"$OUT/third_party/wasm3" \
-    "$OUT/main.cpp" "$OUT/engine.cpp" "$OUT/error_page.cpp" \
-    "$OUT/crash_handler.cpp" "$OUT/log.cpp" "$OUT/strings.cpp" \
-    "$OUT/wasm_runner.cpp" \
+    "$OUT/main.cpp" "$OUT/engine.cpp" "$OUT/crash_handler.cpp" \
+    "$OUT/java_ui.cpp" "$OUT/log.cpp" "$OUT/wasm_runner.cpp" \
     "$WORK"/*.o \
     /system/lib64/liblog.so /system/lib64/libandroid.so \
     -o "$OUT/libmosandroid.so"

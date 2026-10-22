@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+        mavenLocal()  // Termux arm64 版 aapt2 (见 README "在 arm64 Termux 上用 Gradle 构建")
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -8,6 +9,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
     }

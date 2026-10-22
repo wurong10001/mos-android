@@ -5,17 +5,17 @@
 #include <vector>
 
 #include "wasm_runner.h"
-#include "error_page.h"
 
 struct android_app;
 
-// 应用引擎: 管理 NativeActivity 生命周期 + Surface + wasm 渲染循环 + 错误页
+// 应用引擎: 管理 NativeActivity 生命周期 + Surface + wasm 渲染循环
+// 错误展示委托给 Java 错误页 (org.wurong.mos.ErrorActivity, 见 java_ui.h)
 struct Engine {
     struct android_app* app = nullptr;
     ANativeWindow* window = nullptr;
+    bool focused = false;  // 窗口焦点 (错误页盖住时暂停渲染)
 
     WasmRunner wasm;
-    ErrorPage errorPage;
     std::vector<uint8_t> wasmBytes;  // assets 里读出的 wasm 模块 (重试用)
     bool wasmLoaded = false;
     int renderFailCount = 0;
@@ -29,8 +29,11 @@ struct Engine {
     int64_t frameLastNs = 0;
 };
 
-// 加载(或重新加载) wasm; 失败时自动打开错误页
+// 加载(或重新加载) wasm; 失败时拉起 Java 错误页
 bool engineLoadWasm(Engine* e);
+
+// 拉起 Java 错误页 (errorKey 见 java_ui.h; details 为动态错误内容)
+void engineShowError(Engine* e, const char* errorKey, const char* details);
 
 void engineTerm(Engine* e);
 void engineHandleCmd(struct android_app* app, int32_t cmd);
