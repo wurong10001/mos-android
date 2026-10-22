@@ -40,7 +40,8 @@ add_library(mosandroid SHARED
     crash_handler.cpp
     java_ui.cpp
     log.cpp
-    wasm_runner.cpp)
+    wasm_runner.cpp
+    repo_client.cpp)
 
 # 静态链接 libc++, 避免运行时依赖 libc++_shared.so (应用库路径里没有它)
 target_link_options(mosandroid PRIVATE -static-libstdc++)
