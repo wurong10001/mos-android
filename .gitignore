@@ -1,0 +1,18 @@
+# Gradle / Android 构建产物
+.gradle/
+build/
+app/build/
+.cxx/
+.externalNativeBuild/
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# 系统
+.DS_Store
+
+# 安装包 (如需要提交 apk 可去掉这行)
+*.apk
+*.aab

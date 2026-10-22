@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:label="MOS WASM"
+        android:hasCode="false">
+        <!-- 纯 Native Activity: 入口是 cpp/main.cpp 的 android_main -->
+        <activity
+            android:name="android.app.NativeActivity"
+            android:label="MOS WASM"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="true">
+            <!-- 指定要加载的 native 库名: libmosandroid.so -->
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="mosandroid" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
